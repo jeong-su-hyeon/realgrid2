@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link href="./realgrid-style.css" rel="stylesheet" />
+		<script type="text/javascript" src="./realgrid-lic.js"></script>
+		<script type="text/javascript" src="./realgrid.2.9.7.min.js"></script>
+		<script type="text/javascript" src="/js/jquery-3.4.0.min.js"></script>
+	</head>
+	<body>
+        <div>
+            <button onclick="do_commit()">Commit</button>
+            <button onclick="do_delete()">Delete</button>
+        </div>
+		<div id="realgrid" style="width: 100%; height: 440px;"></div>
+	</body>
+</html>
+
+<script>
+    // 3. <데이터 수정하기>
+    // 행 추가(insert)/수정(update)/삭제(delete)
+
+    const provider = new RealGrid.LocalDataProvider();
+	const gridView = new RealGrid.GridView("realgrid");
+	gridView.setDataSource(provider);
+
+    // 커밋 버튼 이벤트
+    function do_commit() {
+        gridView.commit();
+    }
+
+    // 삭제 버튼 이벤트
+    function do_delete() {
+        gridView.deleteSelection();
+    }
+ 
+	document.addEventListener("DOMContentLoaded", function () {
+
+        // 그리드 수정 옵션
+        gridView.editOptions.insertablle = true; // 추가
+        gridView.editOptions.appendable = true;  // 
+        gridView.editOptions.deletable = true;  // 삭제
+        gridView.editOptions.deleteRowsMessage = "선택된 행을 삭제합니다."; // 삭제 전 alert 메시지
+        //gridView.editOptions.editable = false;  // 수정 안되도록
+
+        // 데이터를 저장하기 전에 변경사항을 확인하는 메서드
+        provider.onRowUpdating = function(provider, rowIndex) {
+            var item = gridView.getEditingItem(); // 현재 수정되고 있는 행의 아이템
+            if (item) {
+                if (item.values["id"] < 0) {
+                    setTimeout(function() {
+                        alert("id는 0보다 커야 합니다.");
+                    }, 10);
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        // 필드 지정 
+        provider.setFields([
+            { fieldName: "id", dataType: "number" },
+            { fieldName: "title", dataType: "text" }
+        ]);
+
+        // 칼럼 지정
+        gridView.setColumns([
+            { name: "id",    fieldName: "id",    width: 50,  header: { text: "번호" } },
+            { name: "title", fieldName: "title", width: 400,  header: { text: "제목" } },
+        ]);
+
+        // JSON 데이터 불러오기 (서버 주소)
+        $.getJSON("https://jsonplaceholder.typicode.com/posts", function(data) {
+            provider.fillJsonData(data, { fillMode: "set" });
+        });
+
+	});	
+</script>
