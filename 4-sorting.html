@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link href="./realgrid-style.css" rel="stylesheet" />
+		<script type="text/javascript" src="./realgrid-lic.js"></script>
+		<script type="text/javascript" src="./realgrid.2.9.7.min.js"></script>
+		<script type="text/javascript" src="/js/jquery-3.4.0.min.js"></script>
+	</head>
+	<body>
+        <div>
+            <button onclick="setSorting(true)">소팅 켜기</button>
+            <button onclick="setSorting(false)">소팅 끄기</button>
+            <button onclick="sortByNameAndUserName()">name + username 소팅</button>
+            <button onclick="resetSorting()">소팅 초기화</button>
+        </div>
+        <br>
+        <div>
+            <button onclick="setSortingType('none')">none</button>
+            <button onclick="setSortingType('exclusive')">exclusive</button> <!-- 마지막에 클릭한 칼럼을 기준으로 정렬 (나머지는 무시 됨) -->
+            <button onclick="setSortingType('inclusive')">inclusive</button> <!-- 최초에 클릭한 칼럼을 우선으로 정렬 --> 
+            <button onclick="setSortingType('reverse')">reverse</button> <!-- 마지막에 클릭한 칼럼을 우선으로 정렬 --> 
+        </div>
+        <br>
+		<div id="realgrid" style="width: 100%; height: 440px;"></div>
+	</body>
+</html>
+
+<script>
+    // 4. <정렬>
+    const provider = new RealGrid.LocalDataProvider();
+	const gridView = new RealGrid.GridView("realgrid");
+	gridView.setDataSource(provider);
+
+    // 이벤트 함수
+    // 1) 소팅 적용
+    function setSorting(value) {
+        gridView.sortingOptions.enabled = value; // value에 맞게 sorting 기능 켜기 끄기
+    }
+
+    // 2) 소팅 기준 넣기
+    function sortByNameAndUserName() {
+        // 칼럼명을 기준으로 세로로 한 묶음
+        gridView.orderBy(
+            [ 'name',        'username'   ], // 칼럼명
+            [ 'ascending',   'descending' ], // 오름, 내림차순
+            [ 'insensitive', 'sensitive'  ], // 대소문자 구분
+        );
+    }
+
+    // 3) 소팅 초기화 
+    function resetSorting() {
+        // 다 null로 입력
+        gridView.orderBy(
+            [], [], []
+        );
+    }
+
+    // 4) 정렬 타입 지정
+    function setSortingType(value) {
+        gridView.sortingOptions.style = value;
+    }
+ 
+	document.addEventListener("DOMContentLoaded", function () {
+
+        // 필드 지정 
+        provider.setFields([
+            { fieldName: "id",       dataType: "number" },
+            { fieldName: "name",     dataType: "text"   },
+            { fieldName: "username", dataType: "text"   },
+            { fieldName: "email",    dataType: "text"   },
+        ]);
+
+        // 칼럼 지정
+        gridView.setColumns([
+            { name: "id",       fieldName: "id",      width: "80"  },
+            { name: "name",     fieldName: "name",    width: "120" },
+            { name: "username", fieldName:"username", width: "120" },
+            { name: "email",    fieldName:"email",    width: "200" },
+        ]);
+
+        // JSON 데이터 불러오기 (서버 주소)
+        $.getJSON("https://jsonplaceholder.typicode.com/users", function(data) {
+            provider.fillJsonData(data, { fillMode: "set" });
+            console.log(data);
+        });
+
+	});	
+</script>
